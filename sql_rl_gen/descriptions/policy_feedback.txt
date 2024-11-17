@@ -1,0 +1,1 @@
+We trained the model using the provided reward function code and tracked the scores during the training. Here are the values encountered after each epoch:

@@ -1,0 +1,20 @@
+{
+  "example_text2sql_spider_dev": {
+    "file_name": "example_text2sql_spider_dev.json",
+    "columns": {"prompt": "instruction", "query": "input", "response": "output", "history": "history"}
+  },
+  "example_text2sql_spider_train": {
+    "file_name": "example_text2sql_spider_train.json",
+    "columns": {"prompt": "instruction", "query": "input", "response": "output", "history": "history"}
+
+  },
+  "example_text2sql_wikiSQL_train": {
+    "file_name": "example_text2sql_wikiSQL_train.json",
+    "columns": {"prompt": "instruction", "query": "input", "response": "output", "history": "history"}
+
+  },
+  "example_text2sql_wikiSQL_dev": {
+    "file_name": "example_text2sql_wikiSQL_dev.json",
+    "columns": {"prompt": "instruction", "query": "input", "response": "output", "history": "history"}
+  }
+}

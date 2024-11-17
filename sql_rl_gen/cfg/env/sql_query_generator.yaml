@@ -1,0 +1,3 @@
+task: SQLQueryGeneration
+env_name: sql_generation
+description: converting question and database tables into SQL query

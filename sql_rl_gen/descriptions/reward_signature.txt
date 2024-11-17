@@ -1,0 +1,7 @@
+def compute_reward(self, input_item, predicted_text) -> Tuple[float, Dict]:
+    # input_item is the prompt input for the model
+    # predicted_text is the predicted sentence of RL model generated,
+    # it will be used for ranking reward calculation
+    # reward should be the single value (e.g. float, int etc.)
+    # metrics are the value which were used to calculate the reward
+    return reward, metrics

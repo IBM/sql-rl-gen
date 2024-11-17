@@ -1,0 +1,1 @@
+python data_preprocess/$1_sql_data_process.py

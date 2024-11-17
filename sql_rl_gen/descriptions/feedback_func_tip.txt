@@ -1,0 +1,11 @@
+You can use sql_query_execution_feedback function to return a Dictionary of [str: float], which look like this:
+{
+    "accuracy": float, # -1 if there is an error
+    "precision": float, # -1 if there is an error
+    "recall": float, # -1 if there is an error
+    "f1": float, # -1 if there is an error
+    "iou": float, # -1 if there is an error
+    "error_type": str # can be not present if execution doesn't throw an error
+    "error_reason": str # can be not present if execution doesn't throw an error
+}
+You can use the missed_key_words function to give different reward depending on the generated query and the ground truth or you can write your own "missed_key_words_custom" function and call it instead.
