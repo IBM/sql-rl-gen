@@ -1,8 +1,6 @@
 import os.path
 import sqlite3
-
 from configs.config import DATA_PATH
-
 
 def convert_row_data_to_lowercase(db_path):
     conn = sqlite3.connect(db_path)
@@ -126,7 +124,6 @@ def save_to_json(data, output_path):
 
 def main():
     convert_row_data_to_lowercase(os.path.join(DATA_PATH, "wikisql/database/tables.sqlite"))
-
     sql_file_path = os.path.join(DATA_PATH, 'wikisql', 'dev.jsonl')
     table_file_path = os.path.join(DATA_PATH, 'wikisql', 'tables.jsonl')
     db_path = os.path.join(DATA_PATH, 'wikisql', 'database', 'tables.sqlite')
@@ -134,12 +131,10 @@ def main():
     db_engine = DBEngine(db_path)
     formatted_data = extract_and_format(sql_data, table_data, db_engine)
     save_to_json(formatted_data, os.path.join(DATA_PATH, 'example_text2sql_wikiSQL_dev.json'))
-
     sql_file_path = os.path.join(DATA_PATH, 'wikisql', 'train.jsonl')
     sql_data, table_data = load_data(sql_file_path, table_file_path)
     formatted_data = extract_and_format(sql_data, table_data, db_engine)
     save_to_json(formatted_data, os.path.join(DATA_PATH, 'example_text2sql_wikiSQL_train.json'))
-
     sql_file_path = os.path.join(DATA_PATH, 'wikisql', 'test.jsonl')
     sql_data, table_data = load_data(sql_file_path, table_file_path)
     formatted_data = extract_and_format(sql_data, table_data, db_engine)
