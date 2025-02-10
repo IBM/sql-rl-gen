@@ -115,23 +115,23 @@ def cross_validation_evaluate(eval_args: EvaluateArguments, data_args: DataArgum
     kfolds_data = create_data_from_indexes(kfolds, observation_list)
     all_feedback = []
     all_statistics = []
-    latest_checkpoint = f'../train/0_checkpoint'
+    latest_checkpoint = f'./train/0_checkpoint'
     for i in range(len(kfolds_data)):
         model.train()
         # train folds before testing fold
-        env = SQLRLEnv(model, tokenizer, data_list_to_pass, dataset_path, '../train/', logger, "training",
+        env = SQLRLEnv(model, tokenizer, data_list_to_pass, dataset_path, './train/', logger, "training",
                        columns_names_mismatch=columns_names_mismatch, observation_input=observation_list, compare_sample=1)
         actor = CustomActor(env, model, tokenizer, temperature=eval_args.temperature, top_k=eval_args.top_k, top_p=eval_args.top_p)
         agent = actor.agent_ppo(update_interval=eval_args.update_interval, minibatch_size=eval_args.minibatch_size, epochs=eval_args.epochs, lr=eval_args.lr)
-        agent.load(f'{latest_checkpoint}/827_finish' if i > 0 else eval_args.trained_agent_path)
-        latest_checkpoint = f'../train/{i}_checkpoint'
+        agent.load(f'{latest_checkpoint}/800_finish' if i > 0 else eval_args.trained_agent_path)
+        latest_checkpoint = f'./train/{i}_checkpoint'
         try:
             train_evaulate_agent(agent, env, steps=len(kfolds_data[i][0]), outdir=latest_checkpoint, eval_n_steps=None, eval_n_episodes=5, train_max_episode_len=1000, eval_interval=10)
         except Exception as e:
             print(e)
         # testing fold
         model.eval()
-        env = SQLRLEnv(model, tokenizer, data_list_to_pass, dataset_path, '../test/', logger, "testing",
+        env = SQLRLEnv(model, tokenizer, data_list_to_pass, dataset_path, './test/', logger, "testing",
                        columns_names_mismatch=columns_names_mismatch, observation_input=observation_list, compare_sample=1)
         actor = CustomActor(env, model, tokenizer, temperature=eval_args.temperature, top_k=eval_args.top_k, top_p=eval_args.top_p)
         agent = actor.agent_ppo(update_interval=eval_args.update_interval, minibatch_size=eval_args.minibatch_size, epochs=eval_args.epochs, lr=eval_args.lr)
@@ -156,7 +156,7 @@ def compare_models_rl():
     parser = HfArgumentParser((EvaluateArguments, DataArguments))
     eval_args, data_args = parser.parse_args_into_dataclasses()
     data_args.init_for_training()
-    if eval_args.evaluation_method == EvaluationMethod.KFOLD:
+    if eval_args.evaluation_method == EvaluationMethod.KFOLD.value:
         cross_validation_evaluate(eval_args, data_args)
     else:
         evaluate_models(eval_args, data_args)

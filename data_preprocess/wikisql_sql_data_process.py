@@ -130,15 +130,15 @@ def main():
     sql_data, table_data = load_data(sql_file_path, table_file_path)
     db_engine = DBEngine(db_path)
     formatted_data = extract_and_format(sql_data, table_data, db_engine)
-    save_to_json(formatted_data, os.path.join(DATA_PATH, 'example_text2sql_wikiSQL_dev.json'))
+    save_to_json(formatted_data, os.path.join(DATA_PATH, 'example_text2sql_wikisql_dev.json'))
     sql_file_path = os.path.join(DATA_PATH, 'wikisql', 'train.jsonl')
     sql_data, table_data = load_data(sql_file_path, table_file_path)
     formatted_data = extract_and_format(sql_data, table_data, db_engine)
-    save_to_json(formatted_data, os.path.join(DATA_PATH, 'example_text2sql_wikiSQL_train.json'))
+    save_to_json(formatted_data, os.path.join(DATA_PATH, 'example_text2sql_wikisql_train.json'))
     sql_file_path = os.path.join(DATA_PATH, 'wikisql', 'test.jsonl')
     sql_data, table_data = load_data(sql_file_path, table_file_path)
     formatted_data = extract_and_format(sql_data, table_data, db_engine)
-    save_to_json(formatted_data, os.path.join(DATA_PATH, 'example_text2sql_wikiSQL_test.json'))
+    save_to_json(formatted_data, os.path.join(DATA_PATH, 'example_text2sql_wikisql_test.json'))
 
 if __name__ == "__main__":
     main()

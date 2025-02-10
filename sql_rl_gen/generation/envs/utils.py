@@ -108,9 +108,11 @@ def sql_query_execution_feedback(dataset_path, db_id, expected_query, generated_
     return feedback
 
 def save_dict_csv(data_dict, file_path, file_name):
+    os.makedirs(file_path, exist_ok=True)
+
     file_dir = os.path.join(file_path, file_name)
     is_csv_file_created = os.path.isfile(file_dir)
-    with open(file_dir, 'w' if not is_csv_file_created else 'a', newline='') as f:
+    with open(file_dir, 'w' if not is_csv_file_created else 'a', newline='', encoding='utf-8') as f:
         csv_writer = writer(f)
         if not is_csv_file_created:
             csv_writer.writerow(data_dict.keys())
