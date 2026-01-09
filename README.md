@@ -29,7 +29,12 @@ pip install -e .
 ``sql-rl-gen.egg-info`` compiled directory should appear
 ### 2. Data:
 1. Download data from: https://ibm.box.com/v/sql-rl-gen-data
-2. Unzip in ``./data_preprocess/data``. The files should be organised this way:
+2. Unzip in ``./data_preprocess/data``. (Dataset archives are not included in this repository.)
+   If you have a `spider.zip`, you can also extract it via:
+   ```shell
+   python scripts/setup_spider_data.py --zip-path data_preprocess/data/spider.zip
+   ```
+   The files should be organised this way:
 ```
 sql-rl-gen
 |     configs
@@ -81,7 +86,12 @@ It depends on what is created in a previous point. You might need to change the 
 chmod +rwx ./scripts/evaluate_model.sh
 ./scripts/evaluate_model.sh spider
 ```
-After the evaluation is finished, it will put files: ``feedback_metrics.csv`` and ``statistics_metrics.csv`` inside the ``./output./{model_name}``
+After the evaluation is finished, it will write ``feedback_metrics`` and ``statistics_metrics`` inside ``./output/{model_name}``.
+
+Optional: compare base vs RL checkpoints and generate a Markdown report:
+```shell
+python scripts/run_compare_eval.py --help
+```
 ## Technical reference
 
 **Memory**: 32 GB

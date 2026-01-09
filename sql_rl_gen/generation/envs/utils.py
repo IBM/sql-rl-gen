@@ -9,12 +9,13 @@ from data_preprocess.sql_utils import execute_query
 from sql_rl_gen.feedback_metrics import calculate_all_feedback_metrics
 
 def find_device() -> torch.device:
-    if torch.backends.mps.is_available():
-        return torch.device('mps')
-    elif torch.backends.cudnn.is_available():
-        return torch.device('cuda')
-    else:
-        return torch.device('cpu')
+    # IMPORTANT: `torch.backends.cudnn.is_available()` can be True even when there are
+    # 0 CUDA devices (CPU-only runtime). Use `torch.cuda.is_available()` instead.
+    if getattr(torch.backends, "mps", None) is not None and torch.backends.mps.is_available():
+        return torch.device("mps")
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    return torch.device("cpu")
 
 def replace_columns(predicted_query, tables):
     for i in range(len(tables[0])):

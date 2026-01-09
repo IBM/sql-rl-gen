@@ -50,7 +50,7 @@ class DataArguments:
         },
     )
     dataset_dir: Optional[str] = field(
-        default=f"{ROOT_PATH}/sql-rl-gen/data_preprocess/data/",
+        default=f"{ROOT_PATH}/data_preprocess/data/",
         metadata={"help": "The name of the folder containing datasets."},
     )
     cutoff_len: Optional[int] = field(

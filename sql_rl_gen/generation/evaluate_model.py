@@ -3,8 +3,10 @@ import os.path
 import sys
 from os import listdir
 from statistics import mode
+
 import torch
 from transformers import HfArgumentParser, AutoTokenizer, AutoModelForSeq2SeqLM
+
 from configs.config import BIRD_DATABASES_DEV_PATH, SPIDER_DATABASES_PATH, WIKISQL_PATH
 from configs.data_args import DataArguments, DatasetName
 from configs.rl_args import EvaluateArguments, EvaluationMethod
@@ -18,6 +20,25 @@ from sql_rl_gen.generation.rllib.custom_trainer import train_evaulate_agent
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 device = find_device()
 
+def _resolve_and_validate_trained_agent_path(trained_agent_path: str) -> str:
+    """Resolve `trained_agent_path` and fail fast if it does not exist.
+
+    This is intentionally strict: when users pass `--trained_agent_path`,
+    we must not silently fall back to base-model evaluation.
+    """
+
+    if trained_agent_path is None or not str(trained_agent_path).strip():
+        raise ValueError(
+            "`--trained_agent_path` was provided but is empty/None; refusing to fall back to base model."
+        )
+
+    resolved = os.path.expanduser(str(trained_agent_path))
+    if not os.path.exists(resolved):
+        raise FileNotFoundError(
+            f"RL checkpoint path not found: {trained_agent_path!r} (resolved: {resolved!r})."
+        )
+    return resolved
+
 def prediction_feedback(statistics, data_list_to_pass, dataset_path, observation, result, columns_names_mismatch):
     feedback = sql_query_execution_feedback_on_dataset(data_list_to_pass, dataset_path, observation['input'], result, columns_names_mismatch)
     for k, v in feedback.items():
@@ -25,7 +46,7 @@ def prediction_feedback(statistics, data_list_to_pass, dataset_path, observation
             statistics[k].append(v)
         else:
             statistics[k] = [v]
-        logging.info(f"Appending to {k} value: {v}")
+        logging.debug(f"Appending to {k} value: {v}")
     if device == torch.device("cuda"):
         torch.cuda.empty_cache()
     elif device == torch.device("mps"):
@@ -77,19 +98,49 @@ def prepare_for_evaluate(eval_args: EvaluateArguments, data_args: DataArguments)
     return dataset_path, observation_list, data_list_to_pass, columns_names_mismatch, model, tokenizer
 
 def evaluate_models(eval_args: EvaluateArguments, data_args: DataArguments):
-    dataset_path, observation_list, data_list_to_pass, columns_names_mismatch, model, tokenizer = prepare_for_evaluate(eval_args, data_args)
-    model.eval()
     logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='')
     logger = logging.getLogger("Test")
-    if eval_args.trained_agent_path:
+
+    trained_agent_path = eval_args.trained_agent_path
+    rl_checkpoint_loaded = False
+    if trained_agent_path is not None:
+        trained_agent_path = _resolve_and_validate_trained_agent_path(trained_agent_path)
+
+    logger.info(
+        "[eval] model=%s dataset=%s dataset_name=%s template=%s n_rows=%s outdir=%s",
+        eval_args.model_name_or_path,
+        data_args.dataset,
+        data_args.dataset_name,
+        data_args.template,
+        eval_args.number_of_rows_to_use,
+        eval_args.outdir,
+    )
+    logger.info(
+        "[eval] rl_checkpoint_requested=%s path=%s",
+        trained_agent_path is not None,
+        trained_agent_path,
+    )
+
+    dataset_path, observation_list, data_list_to_pass, columns_names_mismatch, model, tokenizer = prepare_for_evaluate(eval_args, data_args)
+    model.eval()
+
+    actor = None
+    if trained_agent_path is not None:
         env = SQLRLEnv(model, tokenizer, data_list_to_pass, dataset_path, eval_args.outdir, logger, "evaluation", columns_names_mismatch=columns_names_mismatch,
                        observation_input=observation_list, compare_sample=1)
         actor = CustomActor(env, model, tokenizer, temperature=eval_args.temperature, top_k=eval_args.top_k, top_p=eval_args.top_p)
         agent = actor.agent_ppo(update_interval=eval_args.update_interval, minibatch_size=eval_args.minibatch_size, epochs=eval_args.epochs, lr=eval_args.lr)
-        agent.load(eval_args.trained_agent_path)
+        try:
+            agent.load(trained_agent_path)
+        except Exception:
+            logger.exception("[eval] rl_checkpoint_loaded=False path=%s", trained_agent_path)
+            raise
+        rl_checkpoint_loaded = True
+        logger.info("[eval] rl_checkpoint_loaded=True path=%s", trained_agent_path)
+
     statistics = {}
     for observation in observation_list:
-        if eval_args.trained_agent_path:
+        if actor is not None:
             result = actor.predict(observation)[0][:-4]
         else:
             input_ids = tokenizer(observation['input'], return_tensors="pt", max_length=1024).input_ids
@@ -103,6 +154,12 @@ def evaluate_models(eval_args: EvaluateArguments, data_args: DataArguments):
     feedback = construct_file(statistics)
     save_dict_csv(feedback, eval_args.outdir, "feedback_metrics")
     save_dict_csv(statistics, eval_args.outdir, "statistics_metrics")
+    logger.info(
+        "[eval] done rl_checkpoint_loaded=%s path=%s n_samples=%d",
+        rl_checkpoint_loaded,
+        trained_agent_path,
+        len(observation_list),
+    )
     return feedback, statistics
 
 def cross_validation_evaluate(eval_args: EvaluateArguments, data_args: DataArguments):

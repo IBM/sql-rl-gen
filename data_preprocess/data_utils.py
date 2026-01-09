@@ -4,7 +4,7 @@ import os
 import sys
 from typing import Union, List, Optional
 from datasets import Dataset, IterableDataset, load_dataset, concatenate_datasets, interleave_datasets
-from configs.config import EXT2TYPE
+from configs.config import EXT2TYPE, ROOT_PATH
 from configs.data_args import DataArguments
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='')
@@ -25,6 +25,12 @@ def checksum(data_files: List[str], file_sha1: Optional[str] = None) -> None:
 def get_dataset(data_args: "DataArguments") -> Union["Dataset", "IterableDataset"]:
     max_samples = data_args.max_samples
     all_datasets: List[Union["Dataset", "IterableDataset"]] = []  # support multiple datasets
+    # Keep HuggingFace datasets cache inside the repo by default so the project can run
+    # in offline/sandboxed environments that disallow writes to ~/.cache.
+    datasets_cache_dir = os.environ.get("HF_DATASETS_CACHE") or os.path.join(
+        ROOT_PATH, ".hf_cache", "datasets"
+    )
+    os.makedirs(datasets_cache_dir, exist_ok=True)
     for dataset_attr in data_args.dataset_list:
         logger.info("Loading dataset {}...".format(dataset_attr))
         if dataset_attr.load_from == "hf_hub":
@@ -52,7 +58,13 @@ def get_dataset(data_args: "DataArguments") -> Union["Dataset", "IterableDataset
             checksum(data_files, dataset_attr.dataset_sha1)
         else:
             raise NotImplementedError
-        dataset = load_dataset(data_path, data_files=data_files, split=data_args.split, streaming=data_args.streaming)
+        dataset = load_dataset(
+            data_path,
+            data_files=data_files,
+            split=data_args.split,
+            streaming=data_args.streaming,
+            cache_dir=datasets_cache_dir,
+        )
         if max_samples is not None:
             max_samples_temp = min(len(dataset), max_samples)
             dataset = dataset.select(range(max_samples_temp))

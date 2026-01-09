@@ -1,6 +1,7 @@
 from typing import Tuple, Dict
 from textrl import TextRLEnv
 from sql_rl_gen.generation.envs.utils import sql_query_execution_feedback_on_dataset, save_dict_csv
+from sql_rl_gen.generation.envs.sql_generation_environment import compute_reward as compute_reward_base
 
 KEY_WORDS = ["SELECT", "FROM", "WHERE", "JOIN", "INNER", "OUTER", "LEFT", "RIGHT", "AS", "ON", "EXCEPT", "DISTINCT", "GROUP BY", "ORDER BY", "NOT", "ASC", "DESC", "LIMIT", "LIKE", "COUNT", "SUM", "AVG", "MIN", "MAX"]
 
@@ -60,4 +61,6 @@ class SQLRLEnv(TextRLEnv):
         return 0.0
 
     # Skeleton of the reward function
-    def compute_reward(self, input_item, predicted_text) -> Tuple[float, Dict]
+    def compute_reward(self, input_item, predicted_text) -> Tuple[float, Dict]:
+        # Deprecated/legacy env: reuse the main environment reward implementation.
+        return compute_reward_base(self, input_item, predicted_text)

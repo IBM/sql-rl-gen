@@ -1,15 +1,19 @@
 import os
 
-ROOT_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-DATA_PATH = os.path.join(ROOT_PATH, "sql-rl-gen/data_preprocess/data")
+# Resolve project root (repo root) as the parent of this configs/ directory.
+# This makes paths robust to the clone directory name and working directory.
+ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# In-repo data directory
+DATA_PATH = os.path.join(ROOT_PATH, "data_preprocess", "data")
 SPIDER_PATH = os.path.join(DATA_PATH, "spider")
 SPIDER_DATABASES_PATH = os.path.join(SPIDER_PATH, "database")
 BIRD_PATH = os.path.join(DATA_PATH, "bird")
 BIRD_DATABASES_TRAIN_PATH = os.path.join(BIRD_PATH, "train", "train_databases")
 BIRD_DATABASES_DEV_PATH = os.path.join(BIRD_PATH, "dev", "dev_databases")
-WIKISQL_PATH = os.path.join(DATA_PATH, "wikiSQL")
+WIKISQL_PATH = os.path.join(DATA_PATH, "wikisql")
 EXT2TYPE = {"csv": "csv", "json": "json", "jsonl": "json", "txt": "text"}
-OUT_DIR = os.path.join(ROOT_PATH, "sql-rl-gen/output/")
+OUT_DIR = os.path.join(ROOT_PATH, "output")
 OUT_STATISTICS_DIR = os.path.join(OUT_DIR, "statistics")
 SQL_DATA_INFO = [
     {

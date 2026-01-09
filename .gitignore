@@ -1,0 +1,32 @@
+# Dataset archives (keep out of git; use external link or script)
+data_preprocess/data/*.zip
+
+# Unpacked datasets (large)
+data_preprocess/data/spider/
+data_preprocess/data/wikisql/
+data_preprocess/data/bird/
+
+# Generated example datasets (created by scripts/generate_data.sh)
+data_preprocess/data/example_text2sql_*.json
+
+# Training/eval outputs
+output/
+outputs/
+
+# Local/offline caches
+.hf_cache/
+cache/
+
+# Local models (optional)
+local_models/
+
+# Python caches
+__pycache__/
+*.pyc
+
+# Packaging artifacts
+sql_rl_gen.egg-info/
+
+# Editor/IDE metadata
+.vscode/
+.specstory/
